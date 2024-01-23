@@ -9,7 +9,7 @@ from typing import Any
 
 import voluptuous as vol
 from homeassistant import config_entries
-from homeassistant.const import CONF_NAME, CONF_API_KEY
+from homeassistant.const import CONF_NAME, CONF_API_KEY, CONF_URL  # Add CONF_URL
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import APIConnectionError, AuthenticationError
@@ -52,8 +52,8 @@ _LOGGER = logging.getLogger(__name__)
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
         vol.Optional(CONF_NAME): str,
-        vol.Required(CONF_API_KEY): str,        
-        vol.Optional(CONF_BASE_URL, default=DEFAULT_CONF_BASE_URL): str,
+        vol.Required(CONF_API_KEY): str,
+        vol.Required(CONF_URL): str, 
         vol.Optional(CONF_API_VERSION): str,
         vol.Optional(CONF_SKIP_AUTHENTICATION, default=DEFAULT_SKIP_AUTHENTICATION): bool,
     }

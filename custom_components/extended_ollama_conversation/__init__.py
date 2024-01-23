@@ -18,7 +18,7 @@ from ollamaai._exceptions import OllamaAIError, AuthenticationError
 
 from homeassistant.components import conversation
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_API_KEY, MATCH_ALL, ATTR_NAME
+from homeassistant.const import CONF_API_KEY, MATCH_ALL, ATTR_NAME, CONF_URL  # Add CONF_URL
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.util import ulid
@@ -132,10 +132,7 @@ class OllamaAIAgent(conversation.AbstractConversationAgent):
         self.hass = hass
         self.entry = entry
         self.history: dict[str, list[dict]] = {}
-        self.client = AsyncOllama(
-            api_key=entry.data[CONF_API_KEY],
-            base_url=entry.data.get(CONF_BASE_URL),
-        )
+        self.ollama_url = entry.data[CONF_URL]  # Retrieve 'ollama' service URL from entry
 
     @property
     def supported_languages(self) -> list[str] | Literal["*"]:
@@ -286,8 +283,9 @@ class OllamaAIAgent(conversation.AbstractConversationAgent):
 
         _LOGGER.info("Prompt for %s: %s", model, messages)
 
-        # Replace the method call with the equivalent in Ollama API
+        # Use the user-provided 'ollama' service URL for communication
         response: OllamaChatCompletion = await self.client.chat.completions.create(
+            url=self.ollama_url,  # Pass 'ollama' service URL
             model=model,
             messages=messages,
             max_tokens=max_tokens,
