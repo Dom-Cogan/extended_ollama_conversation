@@ -2,7 +2,7 @@
   "domain": "extended_ollama_conversation",
   "name": "Extended Ollama Conversation",
   "codeowners": [
-    "@jekalmin"
+    "@jekalmin","@Dom-Cogan"
   ],
   "config_flow": true,
   "dependencies": [
