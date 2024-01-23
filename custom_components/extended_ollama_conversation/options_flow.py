@@ -1,10 +1,8 @@
-from homeassistant import config_entries
-from homeassistant.helpers import config_validation as vol
+# options_flow.py
 from homeassistant.config_entries import ConfigFlow
+import voluptuous as vol
 
-DOMAIN = "extended_ollama_conversation"
-
-class ExtendedOllamaConversationOptionsFlowHandler(config_entries.OptionsFlow):
+class OptionsFlowHandler(ConfigFlow):
     def __init__(self, config_entry):
         self.config_entry = config_entry
 
@@ -20,6 +18,7 @@ class ExtendedOllamaConversationOptionsFlowHandler(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema({
-                vol.Required("ollama_url", description="Enter the updated Ollama URL", default=self.config_entry.options.get("ollama_url", "")): str
+                vol.Required("ollama_url", description="Enter the updated Ollama URL", default=self.config_entry.options.get("ollama_url", "")): str,
+                vol.Required("model_name", description="Enter the updated model name", default=self.config_entry.options.get("model_name", "")): str
             }),
         )
