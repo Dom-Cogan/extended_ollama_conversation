@@ -2,7 +2,7 @@
   "domain": "extended_ollama_conversation",
   "name": "Extended Ollama Conversation",
   "documentation": "https://github.com/Dom-Cogan/extended_ollama_conversation",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Custom component for extended Ollama conversation in Home Assistant",
   "requirements": [],
   "dependencies": [],

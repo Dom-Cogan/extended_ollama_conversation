@@ -23,3 +23,7 @@ async def async_unload_entry(hass, entry):
     """Unload the component."""
     # Your entry unload logic goes here
     return True
+
+async def async_get_options_flow(config_entry):
+    """Provide the options flow for the integration."""
+    return ExtendedOllamaConversationOptionsFlowHandler(config_entry)

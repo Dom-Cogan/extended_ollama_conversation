@@ -1,6 +1,6 @@
 """Config flow for extended_ollama_conversation."""
 from homeassistant import config_entries
-import homeassistant.helpers.config_validation as vol
+import voluptuous as vol  # Use 'voluptuous' for schema
 
 DOMAIN = "extended_ollama_conversation"
 
