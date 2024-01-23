@@ -6,16 +6,6 @@ from typing import Literal
 import json
 import yaml
 
-from ollama import AsyncOllama
-from ollama.types.chat import OllamaChatCompletion, OllamaChoice
-
-from ollamaai.types.chat.chat_completion import (
-    Choice,
-    ChatCompletion,
-    ChatCompletionMessage,
-)
-from ollamaai._exceptions import OllamaAIError, AuthenticationError
-
 from homeassistant.components import conversation
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_API_KEY, MATCH_ALL, ATTR_NAME, CONF_URL  # Add CONF_URL
@@ -23,18 +13,10 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.util import ulid
 from homeassistant.components.homeassistant.exposed_entities import async_should_expose
-from homeassistant.exceptions import (
-    ConfigEntryNotReady,
-    HomeAssistantError,
-    TemplateError,
-)
+from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError, TemplateError
 
-from homeassistant.helpers import (
-    config_validation as cv,
-    intent,
-    template,
-    entity_registry as er,
-)
+from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import intent, template, entity_registry as er
 
 from .const import (
     CONF_ATTACH_USERNAME,
@@ -45,7 +27,7 @@ from .const import (
     CONF_TOP_P,
     CONF_MAX_FUNCTION_CALLS_PER_CONVERSATION,
     CONF_FUNCTIONS,
-    CONF_BASE_URL,
+    CONF_BASE_URL,  # Remove CONF_BASE_URL
     CONF_API_VERSION,
     CONF_SKIP_AUTHENTICATION,
     DEFAULT_ATTACH_USERNAME,
@@ -56,6 +38,7 @@ from .const import (
     DEFAULT_TOP_P,
     DEFAULT_MAX_FUNCTION_CALLS_PER_CONVERSATION,
     DEFAULT_CONF_FUNCTIONS,
+    DEFAULT_CONF_BASE_URL,
     DEFAULT_SKIP_AUTHENTICATION,
     DOMAIN,
 )
@@ -65,12 +48,10 @@ from .exceptions import (
     FunctionLoadFailed,
     ParseArgumentsFailed,
     InvalidFunction,
+    OllamaAIError
 )
 
-from .helpers import (
-    validate_authentication,
-    get_function_executor,
-)
+from .helpers import validate_authentication, get_function_executor
 
 from .services import async_setup_services
 
@@ -88,14 +69,14 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     return True
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+async def async_setup_entry(hass, entry) -> bool:
     """Set up OllamaAI Conversation from a config entry."""
 
     try:
         await validate_authentication(
             hass=hass,
             api_key=entry.data[CONF_API_KEY],
-            base_url=entry.data.get(CONF_BASE_URL),
+            base_url=entry.data.get(CONF_URL),  # Change to CONF_URL
             api_version=entry.data.get(CONF_API_VERSION),
             skip_authentication=entry.data.get(
                 CONF_SKIP_AUTHENTICATION, DEFAULT_SKIP_AUTHENTICATION
@@ -107,18 +88,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     except OllamaAIError as err:
         raise ConfigEntryNotReady(err) from err
 
-    agent = OllamaAIAgent(hass, entry)
-
-    data = hass.data.setdefault(DOMAIN, {}).setdefault(entry.entry_id, {})
-    data[CONF_API_KEY] = entry.data[CONF_API_KEY]
-    data[DATA_AGENT] = agent
-
-    conversation.async_set_agent(hass, entry, agent)
-    return True
+    try:
+        agent = OllamaAIAgent(hass, entry)
+        data = hass.data.setdefault(DOMAIN, {}).setdefault(entry.entry_id, {})
+        data[CONF_API_KEY] = entry.data[CONF_API_KEY]
+        data[DATA_AGENT] = agent
+        conversation.async_set_agent(hass, entry, agent)
+        return True
+    except ConfigEntryNotReady as err:
+        _LOGGER.error("Error setting up OllamaAI Conversation: %s", err)
+        return False
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Unload ollamaAI."""
+    """Unload OllamaAI."""
     hass.data[DOMAIN].pop(entry.entry_id)
     conversation.async_unset_agent(hass, entry)
     return True
@@ -132,7 +115,8 @@ class OllamaAIAgent(conversation.AbstractConversationAgent):
         self.hass = hass
         self.entry = entry
         self.history: dict[str, list[dict]] = {}
-        self.ollama_url = entry.data[CONF_URL]  # Retrieve 'ollama' service URL from entry
+        self.ollama_url = entry.data[CONF_URL]  # Use CONF_URL for both base_url and required URL
+        self.client = None  # Initialize the client to None
 
     @property
     def supported_languages(self) -> list[str] | Literal["*"]:
@@ -173,6 +157,8 @@ class OllamaAIAgent(conversation.AbstractConversationAgent):
         messages.append(user_message)
 
         try:
+            if self.client is None:
+                self.client = await self._async_get_client()
             response = await self.query(user_input, messages, exposed_entities, 0)
         except OllamaAIError as err:
             _LOGGER.error(err)
@@ -203,6 +189,24 @@ class OllamaAIAgent(conversation.AbstractConversationAgent):
         return conversation.ConversationResult(
             response=intent_response, conversation_id=conversation_id
         )
+
+    async def _async_get_client(self):
+        """Get the Ollama client."""
+        try:
+            # Import 'ollama' module dynamically
+            from ollama import AsyncOllama
+
+            # Create the Ollama client
+            client = AsyncOllama(
+                api_key=self.entry.data[CONF_API_KEY],
+                base_url=self.ollama_url,
+            )
+            return client
+        except ImportError as e:
+            _LOGGER.error(
+                "Error importing 'ollama' module. Make sure it's installed: %s", e
+            )
+            raise ConfigEntryNotReady from e
 
     def _async_generate_prompt(self, raw_prompt: str, exposed_entities) -> str:
         """Generate a prompt for the user."""

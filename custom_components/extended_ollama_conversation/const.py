@@ -4,7 +4,6 @@ DOMAIN = "extended_ollama_conversation"
 DEFAULT_NAME = "Extended Ollama Conversation"
 CONF_BASE_URL = "base_url"
 DEFAULT_CONF_BASE_URL = "http://localhost:11434"  # Replace with Ollama API base URL
-CONF_API_VERSION = "api_version"  # If Ollama has API versions, otherwise remove this
 CONF_SKIP_AUTHENTICATION = "skip_authentication"
 DEFAULT_SKIP_AUTHENTICATION = False
 

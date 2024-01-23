@@ -9,7 +9,7 @@ from typing import Any
 
 import voluptuous as vol
 from homeassistant import config_entries
-from homeassistant.const import CONF_NAME, CONF_API_KEY, CONF_URL  # Add CONF_URL
+from homeassistant.const import CONF_NAME, CONF_API_KEY, CONF_URL 
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import APIConnectionError, AuthenticationError
