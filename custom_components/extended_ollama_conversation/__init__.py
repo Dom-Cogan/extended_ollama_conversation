@@ -10,7 +10,13 @@ async def async_setup(hass, config):
 
 async def async_setup_entry(hass, entry):
     """Set up the component from a config entry."""
-    # Your entry setup logic goes here
+    name = entry.data.get("name")
+    hass.components.persistent_notification.create(
+        f"Extended Ollama Conversation added with name: {name}",
+        title="Extended Ollama Conversation",
+        notification_id="extended_ollama_conversation_notification",
+    )
+    # Your additional setup logic goes here
     return True
 
 async def async_unload_entry(hass, entry):

@@ -1,6 +1,6 @@
 """Config flow for extended_ollama_conversation."""
 from homeassistant import config_entries
-from homeassistant.helpers import config_validation as vol
+import homeassistant.helpers.config_validation as vol
 
 DOMAIN = "extended_ollama_conversation"
 
