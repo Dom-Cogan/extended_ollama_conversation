@@ -1,26 +1,29 @@
 """Options flow for extended_ollama_conversation."""
 from homeassistant import config_entries
-from homeassistant.core import callback
 from homeassistant.helpers import config_validation as vol
-import voluptuous as vol
+from homeassistant.config_entries import ConfigFlow
 
 class ExtendedOllamaConversationOptionsFlowHandler(config_entries.OptionsFlow):
-    """Handle options flow for extended_ollama_conversation."""
+    """Handle extended_ollama_conversation options."""
+
+    def __init__(self, config_entry):
+        """Initialize extended_ollama_conversation options flow."""
+        self.config_entry = config_entry
 
     async def async_step_init(self, user_input=None):
         """Manage the options."""
-        return await self.async_step_advanced_options()
+        return await self.async_step_user()
 
-    async def async_step_advanced_options(self, user_input=None):
-        """Handle advanced options."""
+    async def async_step_user(self, user_input=None):
+        """Handle the options form."""
         if user_input is not None:
-            # Process advanced options
+            # Process user input if needed
             return self.async_create_entry(title="", data=user_input)
 
-        # Show form for advanced options
+        # Display the options form
         return self.async_show_form(
-            step_id="advanced_options",
+            step_id="user",
             data_schema=vol.Schema({
-                vol.Required("additional_setting", default=self.entry.options.get("additional_setting", "")): str,
+                vol.Required("ollamaURL", description="Enter the updated Ollama URL", default=self.config_entry.options.get("ollamaURL", "")): str
             }),
         )

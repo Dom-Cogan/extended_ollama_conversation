@@ -1,5 +1,7 @@
 """The extended_ollama_conversation component."""
 from homeassistant.helpers.discovery import async_load_platform
+from .options_flow import ExtendedOllamaConversationOptionsFlowHandler
+
 
 DOMAIN = "extended_ollama_conversation"
 
