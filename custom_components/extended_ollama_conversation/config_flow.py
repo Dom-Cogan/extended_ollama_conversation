@@ -116,6 +116,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
     """Handle the initial step."""
+    errors = {}
     if user_input is None:
         return self.async_show_form(
             step_id="user", data_schema=STEP_USER_DATA_SCHEMA
@@ -147,6 +148,7 @@ async def async_step_user(self, user_input: dict[str, Any] | None = None) -> Flo
     ) -> config_entries.OptionsFlow:
         """Create the options flow."""
         return OptionsFlow(config_entry)
+
 
 
 class OptionsFlow(config_entries.OptionsFlow):
