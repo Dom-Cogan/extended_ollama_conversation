@@ -22,8 +22,8 @@ class ExtendedOllamaConversationConfigFlow(config_entries.ConfigFlow, domain=DOM
                 return self.async_show_form(
                     step_id="user",
                     data_schema=vol.Schema({
-                        vol.Required("ollamaURL", description="Ollama URL"): str,
-                        vol.Required("model", description="Model name", default="default_model"): str,
+                        vol.Required("ollamaURL", description="Enter the Ollama URL", default=""): str,
+                        vol.Required("model", description="Enter the model", default="default_model"): str,
                     }),
                     errors={"base": "Please provide the Ollama URL."},
                 )
@@ -32,7 +32,7 @@ class ExtendedOllamaConversationConfigFlow(config_entries.ConfigFlow, domain=DOM
         return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema({
-                vol.Required("ollamaURL", description="Enter the Ollama URL"): str,
+                vol.Required("ollamaURL", description="Enter the Ollama URL", default=""): str,
                 vol.Required("model", description="Enter the model", default="default_model"): str,
             }),
         )
