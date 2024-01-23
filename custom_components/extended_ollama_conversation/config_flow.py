@@ -7,27 +7,20 @@ import yaml
 from types import MappingProxyType
 from typing import Any
 
-from openai._exceptions import APIConnectionError, AuthenticationError
 import voluptuous as vol
-
 from homeassistant import config_entries
 from homeassistant.const import CONF_NAME, CONF_API_KEY
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
+from homeassistant.exceptions import APIConnectionError, AuthenticationError
 from homeassistant.helpers.selector import (
-    BooleanSelector,
+    TemplateSelector,
     NumberSelector,
     NumberSelectorConfig,
-    TemplateSelector,
-    AttributeSelector,
-    SelectSelector,
-    SelectSelectorConfig,
-    SelectOptionDict,
-    SelectSelectorMode,
+    BooleanSelector,
 )
 
 from .helpers import validate_authentication
-
 from .const import (
     CONF_ATTACH_USERNAME,
     CONF_CHAT_MODEL,
@@ -65,7 +58,6 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
         vol.Optional(CONF_SKIP_AUTHENTICATION, default=DEFAULT_SKIP_AUTHENTICATION): bool,
     }
 )
-
 
 
 DEFAULT_CONF_FUNCTIONS_STR = yaml.dump(DEFAULT_CONF_FUNCTIONS, sort_keys=False)
@@ -113,43 +105,40 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     VERSION = 1
 
+    async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+        """Handle the initial step."""
+        errors = {}
+        if user_input is None:
+            return self.async_show_form(
+                step_id="user", data_schema=STEP_USER_DATA_SCHEMA
+            )
 
-async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
-    """Handle the initial step."""
-    errors = {}
-    if user_input is None:
+        try:
+            await self.validate_input(hass=self.hass, user_input=user_input)
+
+        except APIConnectionError:
+            errors["base"] = "cannot_connect"
+        except AuthenticationError:
+            errors["base"] = "invalid_auth"
+        except Exception:  # pylint: disable=broad-except
+            _LOGGER.exception("Unexpected exception")
+            errors["base"] = "unknown"
+        else:
+            return self.async_create_entry(
+                title=user_input.get(CONF_NAME, DEFAULT_NAME), data=user_input
+            )
+
         return self.async_show_form(
-            step_id="user", data_schema=STEP_USER_DATA_SCHEMA
+            step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
         )
 
-    try:
-        await self.validate_input(hass=self.hass, user_input=user_input)
 
-    except APIConnectionError:
-        errors["base"] = "cannot_connect"
-    except AuthenticationError:
-        errors["base"] = "invalid_auth"
-    except Exception:  # pylint: disable=broad-except
-        _LOGGER.exception("Unexpected exception")
-        errors["base"] = "unknown"
-    else:
-        return self.async_create_entry(
-            title=user_input.get(CONF_NAME, DEFAULT_NAME), data=user_input
-        )
-
-    return self.async_show_form(
-        step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
-    )
-
-
-    @staticmethod
-    def async_get_options_flow(
-        config_entry: config_entries.ConfigEntry,
-    ) -> config_entries.OptionsFlow:
-        """Create the options flow."""
-        return OptionsFlow(config_entry)
-
-
+        @staticmethod
+        def async_get_options_flow(
+            config_entry: config_entries.ConfigEntry,
+        ) -> config_entries.OptionsFlow:
+            """Create the options flow."""
+            return OptionsFlow(config_entry)
 
 class OptionsFlow(config_entries.OptionsFlow):
     """OllamaAI config flow options handler."""
