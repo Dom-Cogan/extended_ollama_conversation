@@ -1,10 +1,11 @@
 """Options flow for extended_ollama_conversation."""
-from homeassistant import config_entries
 from homeassistant.helpers import config_validation as vol
 from homeassistant.config_entries import ConfigFlow
 
-class ExtendedOllamaConversationOptionsFlowHandler(config_entries.OptionsFlow):
-    """Handle extended_ollama_conversation options."""
+class ExtendedOllamaConversationOptionsFlowHandler(ConfigFlow):
+    async def async_step_init(self, user_input=None):
+        """Manage the options."""
+        return await self.async_step_user()
 
     def __init__(self, config_entry):
         """Initialize extended_ollama_conversation options flow."""
@@ -24,6 +25,7 @@ class ExtendedOllamaConversationOptionsFlowHandler(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema({
-                vol.Required("ollamaURL", description="Enter the updated Ollama URL", default=self.config_entry.options.get("ollamaURL", "")): str
+                vol.Required("ollama_url", description="Enter the updated Ollama URL", default=self.config_entry.options.get("ollama_url", "")): str
             }),
         )
+
