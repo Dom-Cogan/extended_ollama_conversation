@@ -132,13 +132,12 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
         )
 
-
-        @staticmethod
-        def async_get_options_flow(
-            config_entry: config_entries.ConfigEntry,
-        ) -> config_entries.OptionsFlow:
-            """Create the options flow."""
-            return OptionsFlow(config_entry)
+    @staticmethod
+    def async_get_options_flow(
+        config_entry: config_entries.ConfigEntry,
+    ) -> config_entries.OptionsFlow:
+        """Create the options flow."""
+        return OptionsFlow(config_entry)
 
 class OptionsFlow(config_entries.OptionsFlow):
     """OllamaAI config flow options handler."""
