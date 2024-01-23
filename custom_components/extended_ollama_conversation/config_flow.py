@@ -1,6 +1,6 @@
 """Config flow for extended_ollama_conversation."""
 from homeassistant import config_entries
-from homeassistant.helpers import config_validation as vol
+from homeassistant.helpers import config_validation as vol  # Correct import statement
 
 DOMAIN = "extended_ollama_conversation"
 
@@ -16,12 +16,12 @@ class ExtendedOllamaConversationConfigFlow(config_entries.ConfigFlow, domain=DOM
             else:
                 return self.async_show_form(
                     step_id="user",
-                    data_schema=vol.Schema({"name": str}),
+                    data_schema=vol.Schema({vol.Required("name", default=""): str}),
                     errors={"base": "Please provide a name."},
                 )
 
         # Show form to the user to collect input
         return self.async_show_form(
             step_id="user",
-            data_schema=vol.Schema({"name": str}),
+            data_schema=vol.Schema({vol.Required("name", default=""): str}),
         )
